@@ -97,7 +97,6 @@
 #define buzzer 2
 long max = 0;
 int i = 0;
-int lastdetection = -1;
 
 void setup() {
   Serial.begin (9600);
@@ -119,54 +118,54 @@ void setup() {
   long one,two,three,four,five,six,seven,eight,nine,ten;
   delay(500);
   Serial.println("[!] Couting now");
-  one = (pulseIn(echoPin, HIGH)/2) / 29.1;
+  one = (pulseIn(echoPin, HIGH)/2);
   Serial.print("[?] ");
-  Serial.print(one);
+  Serial.print(one/29.1);
   Serial.println(" cm");
   delay(500);
-  two = (pulseIn(echoPin, HIGH)/2) / 29.1;
+  two = (pulseIn(echoPin, HIGH)/2);
   Serial.print("[?] ");
-  Serial.print(two);
+  Serial.print(two/29.1);
   Serial.println(" cm");
   delay(500);
-  three = (pulseIn(echoPin, HIGH)/2) / 29.1;
+  three = (pulseIn(echoPin, HIGH)/2);
   Serial.print("[?] ");
-  Serial.print(three);
+  Serial.print(three/29.1);
   Serial.println(" cm");
   delay(500);
-  four = (pulseIn(echoPin, HIGH)/2) / 29.1;
+  four = (pulseIn(echoPin, HIGH)/2);
   Serial.print("[?] ");
-  Serial.print(four);
+  Serial.print(four/29.1);
   Serial.println(" cm");
   delay(500);
-  five = (pulseIn(echoPin, HIGH)/2) / 29.1;
+  five = (pulseIn(echoPin, HIGH)/2);
   Serial.print("[?] ");
-  Serial.print(five);
+  Serial.print(five/29.1);
   Serial.println(" cm");
   delay(500);
-  six = (pulseIn(echoPin, HIGH)/2) / 29.1;
+  six = (pulseIn(echoPin, HIGH)/2);
   Serial.print("[?] ");
-  Serial.print(six);
+  Serial.print(six/29.1);
   Serial.println(" cm");
   delay(500);
-  seven = (pulseIn(echoPin, HIGH)/2) / 29.1;
+  seven = (pulseIn(echoPin, HIGH)/2);
   Serial.print("[?] ");
-  Serial.print(seven);
+  Serial.print(seven/29.1);
   Serial.println(" cm");
   delay(500);
-  eight = (pulseIn(echoPin, HIGH)/2) / 29.1;
+  eight = (pulseIn(echoPin, HIGH)/2);
   Serial.print("[?] ");
-  Serial.print(eight);
+  Serial.print(eight/29.1);
   Serial.println(" cm");
   delay(500);
-  nine = (pulseIn(echoPin, HIGH)/2) / 29.1;
+  nine = (pulseIn(echoPin, HIGH)/2);
   Serial.print("[?] ");
-  Serial.print(nine);
+  Serial.print(nine/29.1);
   Serial.println(" cm");
   delay(500);
-  ten = (pulseIn(echoPin, HIGH)/2) / 29.1;
+  ten = (pulseIn(echoPin, HIGH)/2);
   Serial.print("[?] ");
-  Serial.print(ten);
+  Serial.print(ten/29.1);
   Serial.println(" cm");
   Serial.println("[*] Finished counting. Playing success tones...");
   tone(buzzer, NOTE_B3);
@@ -180,9 +179,9 @@ void setup() {
   noTone(buzzer);
   Serial.println("[*] Calculating max distance...");
   max = (one+two+three+four+five+six+seven+eight+nine+ten)/10;
-  max = max + 1;
+  max = max + 150;
   Serial.print("[!] Max set to ");
-  Serial.print(max);
+  Serial.print(max/29.1);
   Serial.println(" cm");
   Serial.println("[*] Loop starting in .25 second");
   delay(250);
@@ -197,22 +196,22 @@ void loop() {
   delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
   duration = pulseIn(echoPin, HIGH);
-  distance = (duration/2) / 29.1;
-  Serial.print("[*] Distance:");
-  Serial.println(distance);
-  if(distance > max) {
+  distance = (duration/2);
+  Serial.print("[*] Distance: ");
+  Serial.print(distance/29.1);
+  Serial.print("cm (");
+  Serial.print(distance);
+  Serial.println(")");
+  if(distance > max || (distance != 0 && distance < max - 300)) {
     Serial.println("[!] Detected distance > max");
-    if(lastdetection > 5000 || lastdetection < 0) {
-      tone(buzzer, NOTE_DS4);
-      delay(125);
-      noTone(buzzer);
-      delay(10);
-      tone(buzzer, NOTE_DS4);
-      delay(125);
-      noTone(buzzer);
-    }
-    lastdetection = i;
-    delay(1000);
+    tone(buzzer, NOTE_DS4);
+    delay(125);
+    noTone(buzzer);
+    delay(10);
+    tone(buzzer, NOTE_DS4);
+    delay(125);
+    noTone(buzzer);
+    delay(5000);
   }
   i++;
 }
