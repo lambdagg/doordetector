@@ -95,8 +95,14 @@
 #define trigPin 5
 #define echoPin 4
 #define buzzer 2
+
+const double threshold = (0.50*29.1);
+const double maxdist = (150*29.1);
+
 long max = 0;
 int i = 0;
+
+void(* resetFunc) (void) = 0; //declare reset function @ address 0
 
 void setup() {
   Serial.begin (9600);
@@ -115,58 +121,51 @@ void setup() {
   delay(125);
   noTone(buzzer);
   Serial.println("[*] Couting in .5 second...");
-  long one,two,three,four,five,six,seven,eight,nine,ten;
+  long values[10];
   delay(500);
   Serial.println("[!] Couting now");
-  one = (pulseIn(echoPin, HIGH)/2);
-  Serial.print("[?] ");
-  Serial.print(one/29.1);
-  Serial.println(" cm");
-  delay(500);
-  two = (pulseIn(echoPin, HIGH)/2);
-  Serial.print("[?] ");
-  Serial.print(two/29.1);
-  Serial.println(" cm");
-  delay(500);
-  three = (pulseIn(echoPin, HIGH)/2);
-  Serial.print("[?] ");
-  Serial.print(three/29.1);
-  Serial.println(" cm");
-  delay(500);
-  four = (pulseIn(echoPin, HIGH)/2);
-  Serial.print("[?] ");
-  Serial.print(four/29.1);
-  Serial.println(" cm");
-  delay(500);
-  five = (pulseIn(echoPin, HIGH)/2);
-  Serial.print("[?] ");
-  Serial.print(five/29.1);
-  Serial.println(" cm");
-  delay(500);
-  six = (pulseIn(echoPin, HIGH)/2);
-  Serial.print("[?] ");
-  Serial.print(six/29.1);
-  Serial.println(" cm");
-  delay(500);
-  seven = (pulseIn(echoPin, HIGH)/2);
-  Serial.print("[?] ");
-  Serial.print(seven/29.1);
-  Serial.println(" cm");
-  delay(500);
-  eight = (pulseIn(echoPin, HIGH)/2);
-  Serial.print("[?] ");
-  Serial.print(eight/29.1);
-  Serial.println(" cm");
-  delay(500);
-  nine = (pulseIn(echoPin, HIGH)/2);
-  Serial.print("[?] ");
-  Serial.print(nine/29.1);
-  Serial.println(" cm");
-  delay(500);
-  ten = (pulseIn(echoPin, HIGH)/2);
-  Serial.print("[?] ");
-  Serial.print(ten/29.1);
-  Serial.println(" cm");
+  for(int integer = 0;integer<9;integer++) {
+    int value = pulseIn(echoPin, HIGH)/2;
+    if(value <= 0 || value > maxdist) {
+      Serial.print("[!] Value #");
+      Serial.print(integer);
+      Serial.println(" was equal to zero or bigger than maxdist. Skipping it.");
+      tone(buzzer, NOTE_DS4);
+      delay(125);
+      noTone(buzzer);
+      delay(10);
+      tone(buzzer, NOTE_B3);
+      delay(125);
+      noTone(buzzer);
+      value = 0;
+    } else if(integer != 0 && (value > (values[integer-1] + 29.1) || value < (values[integer-1] - 29.1))) {
+      Serial.print("[!] Value #");
+      Serial.print(integer);
+      Serial.print(" was too far from the value #");
+      Serial.print(integer-1);
+      Serial.println(". Stopping.");
+      tone(buzzer, NOTE_FS4);
+      delay(125);
+      noTone(buzzer);
+      delay(10);
+      tone(buzzer, NOTE_DS4);
+      delay(125);
+      noTone(buzzer);
+      tone(buzzer, NOTE_B3);
+      delay(175);
+      noTone(buzzer);
+      delay(1000);
+      resetFunc();
+    } else {
+      Serial.print("[?] ");
+      Serial.print(value/29.1);
+      Serial.print(" cm (");
+      Serial.print(value);
+      Serial.println(")");
+    }
+    values[integer] = value;
+    delay(500);
+  }
   Serial.println("[*] Finished counting. Playing success tones...");
   tone(buzzer, NOTE_B3);
   delay(125);
@@ -178,11 +177,11 @@ void setup() {
   delay(175);
   noTone(buzzer);
   Serial.println("[*] Calculating max distance...");
-  max = (one+two+three+four+five+six+seven+eight+nine+ten)/10;
-  max = max + 150;
   Serial.print("[!] Max set to ");
   Serial.print(max/29.1);
-  Serial.println(" cm");
+  Serial.print("cm (threshold +/- ");
+  Serial.print(threshold/29.1);
+  Serial.println("cm)");
   Serial.println("[*] Loop starting in .25 second");
   delay(250);
   Serial.println("[!] Loop starting");
@@ -202,8 +201,8 @@ void loop() {
   Serial.print("cm (");
   Serial.print(distance);
   Serial.println(")");
-  if(distance > max || (distance != 0 && distance < max - 300)) {
-    Serial.println("[!] Detected distance > max");
+  if((distance > (max + threshold) || (distance > 0 && distance < (max - threshold))) && distance < maxdist) {
+    Serial.println("[!] Max/min distance exceeded");
     tone(buzzer, NOTE_DS4);
     delay(125);
     noTone(buzzer);
